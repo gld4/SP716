@@ -1,0 +1,151 @@
+echo -e "\n---USER PERMISSIONS---"
+echo "Dev: Glazyrina Larisa"
+echo -e "This program: \n-display the name of the current directory \n-asks for a file name and username"
+echo -e "-displays the rights of this user to the file"
+echo "Current directory:"
+pwd
+
+boolean="1"
+while [ "$boolean" == "1" ]
+do
+
+echo "Enter file name"
+read filenm
+while [ ! -f "$filenm" ]
+do
+echo "File do not exist. Enter again"
+read filenm
+done
+
+echo "Enter username"
+read usernm
+
+#grep -c '&usernm' /etc/passwd
+
+test $(id -u $usernm)
+
+while [[ "$?" == "1"  ]]
+# ! grep -c '&usernm' /etc/passwd
+do
+echo "user do not exist. Enter again"
+read usernm
+test $(id -u $usernm)
+done
+
+string1=$(ls -l $filenm)
+
+ownernm=$(stat -c%U $filenm)
+#${string1:13:5}
+#opredelyaem vladelec li user
+if [[ "$ownernm" == "$usernm" ]]
+then
+
+echo -e "\nUser is the owner of the file. \nUser permissions:"
+
+if [[ "${string1:1:1}" == "r" ]]
+then
+echo "READ"
+fi
+
+if [[ "${string1:2:1}" == "w" ]]
+then
+echo "WRITE"
+fi
+
+if [[ "${string1:3:1}" == "x" ]]
+then
+echo "EXECUTE" 
+fi
+
+
+if [[ "${string1:1:3}" == "---" ]]
+then
+echo "THIS USER HAS NO RIGHTS!" 
+fi
+
+else
+
+usergroup=$(id -Gn $usernm)
+#echo $usergroup
+str=$(stat -c%G $filenm)
+#${string1:19:4}
+#echo $str
+
+#vhodit li user in group
+if echo "$usergroup" | grep -i "$str" >/dev/null; 
+then
+
+echo -e "\nUser is a member of the owner group. \nUser permissions:"
+if [[ "${string1:4:1}" == "r" ]]
+then
+echo "READ"
+fi
+
+if [[ "${string1:5:1}" == "w" ]]
+then
+echo "WRITE"
+fi
+
+if [[ "${string1:6:1}" == "x" ]]
+then
+echo "EXECUTE"
+fi
+
+if [[ "${string1:4:3}" == "---" ]]
+then
+echo "THIS USER HAS NO RIGHTS!" 
+fi
+
+
+else
+
+#esli polzovatel other user
+
+echo -e "\nUser belongs to oher users. \nUser permissions:"
+if [[ "${string1:7:1}" == "r" ]]
+then
+echo "READ"
+fi
+
+if [[ "${string1:8:1}" == "w" ]]
+then
+echo "WRITE"
+fi
+
+if [[ "${string1:9:1}" == "x" ]]
+then
+echo "EXECUTE"
+fi 
+
+if [[ "${string1:7:3}" == "---" ]]
+then
+echo "THIS USER HAS NO RIGHTS!" 
+fi
+
+
+fi
+
+fi
+
+echo -e "\n---Do you want to repeat???"
+
+foo="1"
+while [[ "$foo" == "1" ]]
+do
+read boolean
+case $boolean in
+Y|y|yes)
+boolean="1"
+foo="0"
+;;
+N|n|no)
+boolean="0"
+foo="0"
+;;
+*)
+echo "Invalid input. Please enter Y|y or N|n"
+;;
+esac
+done
+
+done
